@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X } from 'lucide-react';
+import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './App.css';
 
@@ -18,7 +18,9 @@ const iconMap: Record<string, JSX.Element> = {
   'Crown': <Crown className="text-primary" />,
   'Heart': <Heart className="text-primary" />,
   'Star': <Star className="text-primary" />,
-  'Coffee': <Coffee className="text-primary" />
+  'Coffee': <Coffee className="text-primary" />,
+  'Gift': <Gift className="text-primary" />,
+  'Sparkles': <Sparkles className="text-primary" />
 };
 
 function App() {
@@ -52,12 +54,12 @@ function App() {
       <nav className="navbar glass-panel">
         <div className="container nav-content">
           <div className="logo">
-            <Cake size={32} color="var(--color-primary)" />
+            <button className="menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+            <Cake size={32} color="var(--color-primary)" className="logo-icon" />
             <h1>Mis Dulces Ideas</h1>
           </div>
-          <button className="menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
           <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
             <li><a href="#inicio" onClick={() => setIsMenuOpen(false)}>Inicio</a></li>
             <li><a href="#galeria" onClick={() => setIsMenuOpen(false)}>Galería</a></li>
