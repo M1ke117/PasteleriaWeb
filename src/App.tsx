@@ -1,25 +1,50 @@
-import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X } from 'lucide-react';
+import { supabase } from './lib/supabase';
 import './App.css';
 
-// Using absolute path for Vite /@fs/ local file system serving
-const IMAGE_CAKE = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/cake_promo_1779207895286.png";
-const IMAGE_PIZZA = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/pizza_promo_1779207908451.png";
-const IMAGE_FRESAS = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/fresas_crema_1779207922932.png";
-const IMAGE_FLAN = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/flan_promo_1779207940555.png";
-const IMAGE_CHOCOFLAN = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/chocoflan_promo_1779207953779.png";
-const IMAGE_BURGER = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/hamburguesa_promo_1779208921250.png";
-const IMAGE_XV = "/@fs/C:/Users/AVH-COM-330/.gemini/antigravity/brain/adacf84f-06ac-4e01-bc1e-3553a5b4b551/quinceanera_cake_1779208936684.png";
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  icon: string;
+}
+
+const iconMap: Record<string, JSX.Element> = {
+  'Cake': <Cake className="text-primary" />,
+  'Pizza': <Pizza className="text-primary" />,
+  'Sandwich': <Sandwich className="text-primary" />,
+  'Crown': <Crown className="text-primary" />,
+  'Heart': <Heart className="text-primary" />,
+  'Star': <Star className="text-primary" />,
+  'Coffee': <Coffee className="text-primary" />
+};
 
 function App() {
-  const products = [
-    { id: 1, name: 'Pastel de Ensueño', description: 'Nuestros pasteles decorados, perfectos para tus eventos más dulces.', image: IMAGE_CAKE, icon: <Cake className="text-primary" /> },
-    { id: 2, name: 'Pizzas Artesanales', description: 'El contraste perfecto: Pizzas calientes con ingredientes frescos.', image: IMAGE_PIZZA, icon: <Pizza className="text-primary" /> },
-    { id: 3, name: 'Hamburguesas Gourmet', description: 'Jugosas hamburguesas con ingredientes premium para satisfacer tu antojo.', image: IMAGE_BURGER, icon: <Sandwich className="text-primary" /> },
-    { id: 4, name: 'Pasteles de 15 Años', description: 'Creaciones majestuosas y elegantes para hacer de tus XV años un día inolvidable.', image: IMAGE_XV, icon: <Crown className="text-primary" /> },
-    { id: 5, name: 'Fresas con Crema', description: 'Clásico y delicioso. Fresas frescas con nuestra receta secreta de crema.', image: IMAGE_FRESAS, icon: <Heart className="text-primary" /> },
-    { id: 6, name: 'Flan Napolitano', description: 'Suave, cremoso y bañado en el más rico caramelo.', image: IMAGE_FLAN, icon: <Star className="text-primary" /> },
-    { id: 7, name: 'Chocoflan (Pastel Imposible)', description: 'Lo mejor de dos mundos: bizcocho de chocolate y flan cremoso.', image: IMAGE_CHOCOFLAN, icon: <Coffee className="text-primary" /> },
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('id');
+        
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (err) {
+        console.error("Error al cargar los productos de Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchProducts();
+  }, []);
 
   return (
     <div className="app-container">
@@ -30,10 +55,13 @@ function App() {
             <Cake size={32} color="var(--color-primary)" />
             <h1>Mis Dulces Ideas</h1>
           </div>
-          <ul className="nav-links">
-            <li><a href="#inicio">Inicio</a></li>
-            <li><a href="#galeria">Galería</a></li>
-            <li><a href="#nosotros">Nosotros</a></li>
+          <button className="menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+          <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
+            <li><a href="#inicio" onClick={() => setIsMenuOpen(false)}>Inicio</a></li>
+            <li><a href="#galeria" onClick={() => setIsMenuOpen(false)}>Galería</a></li>
+            <li><a href="#nosotros" onClick={() => setIsMenuOpen(false)}>Nosotros</a></li>
           </ul>
           <a href="https://www.facebook.com/share/17jtbifXp2/" target="_blank" rel="noreferrer" className="btn-primary nav-btn">
             <Facebook size={20} /> Contactar
@@ -53,7 +81,7 @@ function App() {
             </div>
           </div>
           <div className="hero-image-wrapper">
-            <img src={IMAGE_CAKE} alt="Pastel decorado" className="hero-image" />
+            <img src="/images/cake.png" alt="Pastel decorado" className="hero-image" />
             <div className="floating-badge glass-panel">
               <Star className="badge-icon" fill="var(--color-secondary)" color="var(--color-secondary)" />
               <span>Calidad y Sabor</span>
@@ -70,23 +98,33 @@ function App() {
             <p>Explora la variedad de opciones que tenemos para ti</p>
           </div>
           <div className="product-grid">
-            {products.map((product) => (
-              <div key={product.id} className="product-card glass-panel">
-                <div className="card-image-container">
-                  <img src={product.image} alt={product.name} loading="lazy" />
-                  <div className="card-overlay">
-                    <button className="btn-primary btn-icon"><Heart size={20} /></button>
-                  </div>
-                </div>
-                <div className="card-content">
-                  <div className="card-header">
-                    <h4>{product.name}</h4>
-                    {product.icon}
-                  </div>
-                  <p>{product.description}</p>
-                </div>
+            {loading ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+                <Loader2 className="text-primary" size={48} style={{ animation: 'spin 2s linear infinite', margin: '0 auto' }} />
+                <p style={{ marginTop: '1rem', color: 'var(--color-text-light)' }}>Cargando delicias...</p>
+                <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
               </div>
-            ))}
+            ) : products.length === 0 ? (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>Aún no hay productos, asegúrate de conectarte a Supabase y agregar datos.</p>
+            ) : (
+              products.map((product) => (
+                <div key={product.id} className="product-card glass-panel">
+                  <div className="card-image-container">
+                    <img src={product.image} alt={product.name} loading="lazy" />
+                    <div className="card-overlay">
+                      <button className="btn-primary btn-icon"><Heart size={20} /></button>
+                    </div>
+                  </div>
+                  <div className="card-content">
+                    <div className="card-header">
+                      <h4>{product.name}</h4>
+                      {iconMap[product.icon] || <Cake className="text-primary" />}
+                    </div>
+                    <p>{product.description}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
