@@ -134,7 +134,7 @@ function App() {
         <div className="container about-content">
           <div className="about-text">
             <h3>Hecho con <span className="text-highlight">Amor</span></h3>
-            <p>En <strong>Mis Dulces Ideas</strong>, nuestra repostera <strong>Celeste Avalos Landa</strong> se encarga de preparar cada postre de forma artesanal. Desde nuestras fresas con crema hasta los pasteles de 15 años, Celeste elabora todos nuestros productos con mucho cuidado y cariño para ofrecerte un postre delicioso.</p>
+            <p>En <strong>Mis Dulces Ideas</strong>, creemos que cada postre cuenta una historia. Desde nuestra famosa receta de fresas con crema hasta los sofisticados chocoflanes, todo lo preparamos de forma artesanal, cuidando cada detalle para asegurar que cada bocado sea una experiencia mágica. ¡Tu sonrisa es nuestra mejor receta!</p>
           </div>
         </div>
       </section>
