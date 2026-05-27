@@ -28,6 +28,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedGalleryItem, setSelectedGalleryItem] = useState<{ name: string, image: string } | null>(null);
+  const [galleryData, setGalleryData] = useState<Record<string, string[]>>({});
+
+  useEffect(() => {
+    fetch('/gallery.json')
+      .then(res => res.json())
+      .then(data => setGalleryData(data))
+      .catch(err => console.error('Error loading gallery:', err));
+  }, []);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -209,6 +217,24 @@ function App() {
               </div>
             </div>
 
+            <div className="specialty-card glass-panel">
+              <div className="card-image-container">
+                <img src="/images/cupcake.png" alt="Cupcakes" loading="lazy" />
+                <div className="card-overlay">
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cupcakes', image: '/images/cupcake.png' })}>
+                    <Search size={20} /> Ver galería
+                  </button>
+                </div>
+              </div>
+              <div className="specialty-content">
+                <div className="specialty-header">
+                  <h4>Cupcakes</h4>
+                  <Gift className="text-primary" />
+                </div>
+                <p>Pequeños bocados de felicidad decorados con coberturas exquisitas y diseños muy especiales.</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -252,12 +278,42 @@ function App() {
               <X size={24} />
             </button>
             <h3>Galería de {selectedGalleryItem.name}</h3>
-            <p>Aquí mostraremos todos los trabajos y pedidos que hemos realizado.</p>
+            <p>Aquí mostramos todos los trabajos reales que hemos entregado.</p>
             <div className="modal-gallery-grid">
-              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 1`} />
-              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 2`} style={{ filter: 'saturate(1.2) hue-rotate(5deg)' }} />
-              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 3`} style={{ filter: 'saturate(0.8) hue-rotate(-5deg)' }} />
-              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 4`} style={{ filter: 'brightness(0.9) contrast(1.1)' }} />
+              {(() => {
+                const getGalleryKey = (name: string) => {
+                  const n = name.toLowerCase();
+                  if (n.includes('chocoflan') || n.includes('imposible')) return 'chocoflan';
+                  if (n.includes('15 años')) return 'pastel xv';
+                  if (n.includes('gelatina')) return 'gelatina';
+                  if (n.includes('pan')) return 'pan';
+                  if (n.includes('pizza')) return 'pizza';
+                  if (n.includes('rosca')) return 'roscas';
+                  if (n.includes('fresa')) return 'fresas';
+                  if (n.includes('flan')) return 'flan';
+                  if (n.includes('dona')) return 'donas';
+                  if (n.includes('cupcake')) return 'cupcake';
+                  if (n.includes('cheese')) return 'chessecake';
+                  if (n.includes('pastel')) return 'pastel';
+                  return null;
+                };
+                
+                const key = getGalleryKey(selectedGalleryItem.name);
+                const images = key && galleryData[key] ? galleryData[key] : [];
+                
+                if (images.length > 0) {
+                  return images.map((img, idx) => (
+                    <img key={idx} src={img} alt={`${selectedGalleryItem.name} ${idx + 1}`} loading="lazy" />
+                  ));
+                }
+                
+                return (
+                  <>
+                    <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 1`} />
+                    <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 2`} style={{ filter: 'saturate(1.2) hue-rotate(5deg)' }} />
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
