@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles } from 'lucide-react';
+import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles, Search } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './App.css';
 
@@ -27,6 +27,7 @@ function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<{ name: string, image: string } | null>(null);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -35,7 +36,7 @@ function App() {
           .from('products')
           .select('*')
           .order('id');
-        
+
         if (error) throw error;
         setProducts(data || []);
       } catch (err) {
@@ -44,9 +45,20 @@ function App() {
         setLoading(false);
       }
     }
-    
+
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (selectedGalleryItem || isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedGalleryItem, isMenuOpen]);
 
   return (
     <div className="app-container">
@@ -63,6 +75,7 @@ function App() {
           <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
             <li><a href="#inicio" onClick={() => setIsMenuOpen(false)}>Inicio</a></li>
             <li><a href="#galeria" onClick={() => setIsMenuOpen(false)}>Galería</a></li>
+            <li><a href="#especialidades" onClick={() => setIsMenuOpen(false)}>Especialidades</a></li>
             <li><a href="#nosotros" onClick={() => setIsMenuOpen(false)}>Nosotros</a></li>
           </ul>
           <a href="https://www.facebook.com/share/17jtbifXp2/" target="_blank" rel="noreferrer" className="btn-primary nav-btn">
@@ -114,7 +127,9 @@ function App() {
                   <div className="card-image-container">
                     <img src={product.image} alt={product.name} loading="lazy" />
                     <div className="card-overlay">
-                      <button className="btn-primary btn-icon"><Heart size={20} /></button>
+                      <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: product.name, image: product.image })}>
+                        <Search size={20} /> Ver galería
+                      </button>
                     </div>
                   </div>
                   <div className="card-content">
@@ -127,6 +142,73 @@ function App() {
                 </div>
               ))
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Specialties Section */}
+      <section id="especialidades" className="specialties">
+        <div className="container">
+          <div className="section-title">
+            <h3>Nuestras Especialidades</h3>
+            <p>También ofrecemos una deliciosa selección de panadería y repostería</p>
+          </div>
+          <div className="specialties-grid">
+
+            <div className="specialty-card glass-panel">
+              <div className="card-image-container">
+                <img src="/images/pan_dulce.png" alt="Pan de Dulce" loading="lazy" />
+                <div className="card-overlay">
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Pan de Dulce', image: '/images/pan_dulce.png' })}>
+                    <Search size={20} /> Ver galería
+                  </button>
+                </div>
+              </div>
+              <div className="specialty-content">
+                <div className="specialty-header">
+                  <h4>Pan de Dulce</h4>
+                  <Coffee className="text-primary" />
+                </div>
+                <p>Conchas, cuernos, orejas y más. El acompañamiento perfecto para tu café o chocolate caliente.</p>
+              </div>
+            </div>
+
+            <div className="specialty-card glass-panel">
+              <div className="card-image-container">
+                <img src="/images/donuts.png" alt="Donas" loading="lazy" />
+                <div className="card-overlay">
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Donas', image: '/images/donuts.png' })}>
+                    <Search size={20} /> Ver galería
+                  </button>
+                </div>
+              </div>
+              <div className="specialty-content">
+                <div className="specialty-header">
+                  <h4>Donas</h4>
+                  <Sparkles className="text-primary" />
+                </div>
+                <p>Esponjosas y deliciosas, con una gran variedad de glaseados y toppings para todos los gustos.</p>
+              </div>
+            </div>
+
+            <div className="specialty-card glass-panel">
+              <div className="card-image-container">
+                <img src="/images/cheesecake.png" alt="Cheesecake" loading="lazy" />
+                <div className="card-overlay">
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cheesecake', image: '/images/cheesecake.png' })}>
+                    <Search size={20} /> Ver galería
+                  </button>
+                </div>
+              </div>
+              <div className="specialty-content">
+                <div className="specialty-header">
+                  <h4>Cheesecake</h4>
+                  <Cake className="text-primary" />
+                </div>
+                <p>Un clásico cremoso y suave al estilo New York, coronado con frutas frescas o dulces salsas.</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -158,9 +240,28 @@ function App() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Mis Dulces Ideas. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Mis Dulces Ideas. Con Mucho Amoor Para Mi Celees.</p>
         </div>
       </footer>
+
+      {/* Gallery Modal */}
+      {selectedGalleryItem && (
+        <div className="modal-overlay" onClick={() => setSelectedGalleryItem(null)}>
+          <div className="modal-content glass-panel animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedGalleryItem(null)}>
+              <X size={24} />
+            </button>
+            <h3>Galería de {selectedGalleryItem.name}</h3>
+            <p>Aquí mostraremos todos los trabajos y pedidos que hemos realizado.</p>
+            <div className="modal-gallery-grid">
+              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 1`} />
+              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 2`} style={{ filter: 'saturate(1.2) hue-rotate(5deg)' }} />
+              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 3`} style={{ filter: 'saturate(0.8) hue-rotate(-5deg)' }} />
+              <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 4`} style={{ filter: 'brightness(0.9) contrast(1.1)' }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
