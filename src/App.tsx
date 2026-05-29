@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Cake, Facebook, ChevronRight, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles, Search } from 'lucide-react';
+import { Cake, Facebook, ChevronRight, ChevronLeft, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles, Search } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './App.css';
 
@@ -24,11 +24,40 @@ const iconMap: Record<string, JSX.Element> = {
 };
 
 function App() {
+  const getGalleryKey = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('chocoflan') || n.includes('imposible')) return 'chocoflan';
+    if (n.includes('15 años')) return 'pastel xv';
+    if (n.includes('gelatina')) return 'gelatina';
+    if (n.includes('pan')) return 'pan';
+    if (n.includes('pizza')) return 'pizza';
+    if (n.includes('rosca')) return 'roscas';
+    if (n.includes('fresa')) return 'fresas';
+    if (n.includes('flan')) return 'flan';
+    if (n.includes('dona')) return 'donas';
+    if (n.includes('cupcake')) return 'cupcake';
+    if (n.includes('cheese')) return 'chessecake';
+    if (n.includes('hamburguesa')) return 'hamburguesas';
+    if (n.includes('pastel')) return 'pastel';
+    return null;
+  };
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedGalleryItem, setSelectedGalleryItem] = useState<{ name: string, image: string } | null>(null);
+  const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
   const [galleryData, setGalleryData] = useState<Record<string, string[]>>({});
+  const [currentMeritoIndex, setCurrentMeritoIndex] = useState(0);
+
+  useEffect(() => {
+    if (galleryData['meritos'] && galleryData['meritos'].length > 0) {
+      const interval = setInterval(() => {
+        setCurrentMeritoIndex(prev => (prev + 1) % galleryData['meritos'].length);
+      }, 3500);
+      return () => clearInterval(interval);
+    }
+  }, [galleryData]);
 
   useEffect(() => {
     fetch('/gallery.json')
@@ -46,7 +75,12 @@ function App() {
           .order('id');
 
         if (error) throw error;
-        setProducts(data || []);
+
+        const modifiedData = (data || []).map(p =>
+          p.name === 'Pastel de Ensueño' ? { ...p, name: 'Pasteles' } : p
+        );
+
+        setProducts(modifiedData);
       } catch (err) {
         console.error("Error al cargar los productos de Supabase:", err);
       } finally {
@@ -58,7 +92,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (selectedGalleryItem || isMenuOpen) {
+    if (selectedGalleryItem || isMenuOpen || expandedImageIndex !== null) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -66,7 +100,7 @@ function App() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [selectedGalleryItem, isMenuOpen]);
+  }, [selectedGalleryItem, isMenuOpen, expandedImageIndex]);
 
   return (
     <div className="app-container">
@@ -104,11 +138,16 @@ function App() {
             </div>
           </div>
           <div className="hero-image-wrapper">
-            <img src="/images/cake.png" alt="Pastel decorado" className="hero-image" />
-            <div className="floating-badge glass-panel">
-              <Star className="badge-icon" fill="var(--color-secondary)" color="var(--color-secondary)" />
-              <span>Calidad y Sabor</span>
-            </div>
+            {galleryData['meritos'] && galleryData['meritos'].length > 0 ? (
+              <img 
+                src={galleryData['meritos'][currentMeritoIndex]} 
+                alt="Méritos y reconocimientos" 
+                className="hero-image" 
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <img src="/images/cake.png" alt="Pastel decorado" className="hero-image" />
+            )}
           </div>
         </div>
       </section>
@@ -130,16 +169,22 @@ function App() {
             ) : products.length === 0 ? (
               <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>Aún no hay productos, asegúrate de conectarte a Supabase y agregar datos.</p>
             ) : (
-              products.map((product) => (
-                <div key={product.id} className="product-card glass-panel">
-                  <div className="card-image-container">
-                    <img src={product.image} alt={product.name} loading="lazy" />
-                    <div className="card-overlay">
-                      <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: product.name, image: product.image })}>
-                        <Search size={20} /> Ver galería
-                      </button>
+              products.map((product) => {
+                const key = getGalleryKey(product.name);
+                const idx = (key === 'cupcake' || key === 'pastel xv') ? 1 : 0;
+                const coverImage = key && galleryData[key] && galleryData[key].length > idx 
+                  ? galleryData[key][idx] 
+                  : (key && galleryData[key] && galleryData[key].length > 0 ? galleryData[key][0] : product.image);
+                return (
+                  <div key={product.id} className="product-card glass-panel">
+                    <div className="card-image-container">
+                      <img src={coverImage} alt={product.name} loading="lazy" />
+                      <div className="card-overlay">
+                        <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: product.name, image: coverImage })}>
+                          <Search size={20} /> Ver galería
+                        </button>
+                      </div>
                     </div>
-                  </div>
                   <div className="card-content">
                     <div className="card-header">
                       <h4>{product.name}</h4>
@@ -148,7 +193,7 @@ function App() {
                     <p>{product.description}</p>
                   </div>
                 </div>
-              ))
+              )})
             )}
           </div>
         </div>
@@ -165,9 +210,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src="/images/pan_dulce.png" alt="Pan de Dulce" loading="lazy" />
+                <img src={galleryData['pan']?.[0] || "/images/pan_dulce.png"} alt="Pan de Dulce" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Pan de Dulce', image: '/images/pan_dulce.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Pan de Dulce', image: galleryData['pan']?.[0] || '/images/pan_dulce.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -183,9 +228,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src="/images/donuts.png" alt="Donas" loading="lazy" />
+                <img src={galleryData['donas']?.[0] || "/images/donuts.png"} alt="Donas" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Donas', image: '/images/donuts.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Donas', image: galleryData['donas']?.[0] || '/images/donuts.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -201,9 +246,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src="/images/cheesecake.png" alt="Cheesecake" loading="lazy" />
+                <img src={galleryData['chessecake']?.[0] || "/images/cheesecake.png"} alt="Cheesecake" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cheesecake', image: '/images/cheesecake.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cheesecake', image: galleryData['chessecake']?.[0] || '/images/cheesecake.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -219,9 +264,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src="/images/cupcake.png" alt="Cupcakes" loading="lazy" />
+                <img src={galleryData['cupcake']?.[1] || galleryData['cupcake']?.[0] || "/images/cupcake.png"} alt="Cupcakes" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cupcakes', image: '/images/cupcake.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cupcakes', image: galleryData['cupcake']?.[1] || galleryData['cupcake']?.[0] || '/images/cupcake.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -294,19 +339,27 @@ function App() {
                   if (n.includes('dona')) return 'donas';
                   if (n.includes('cupcake')) return 'cupcake';
                   if (n.includes('cheese')) return 'chessecake';
+                  if (n.includes('hamburguesa')) return 'hamburguesas';
                   if (n.includes('pastel')) return 'pastel';
                   return null;
                 };
-                
+
                 const key = getGalleryKey(selectedGalleryItem.name);
                 const images = key && galleryData[key] ? galleryData[key] : [];
-                
+
                 if (images.length > 0) {
                   return images.map((img, idx) => (
-                    <img key={idx} src={img} alt={`${selectedGalleryItem.name} ${idx + 1}`} loading="lazy" />
+                    <img 
+                      key={idx} 
+                      src={img} 
+                      alt={`${selectedGalleryItem.name} ${idx + 1}`} 
+                      loading="lazy" 
+                      onClick={() => setExpandedImageIndex(idx)}
+                      style={{ cursor: 'pointer' }}
+                    />
                   ));
                 }
-                
+
                 return (
                   <>
                     <img src={selectedGalleryItem.image} alt={`${selectedGalleryItem.name} 1`} />
@@ -316,6 +369,47 @@ function App() {
               })()}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Lightbox Overlay */}
+      {expandedImageIndex !== null && selectedGalleryItem && (
+        <div className="lightbox-overlay" onClick={() => setExpandedImageIndex(null)}>
+          <button className="lightbox-close" onClick={() => setExpandedImageIndex(null)}>
+            <X size={32} color="white" />
+          </button>
+          {(() => {
+            const key = getGalleryKey(selectedGalleryItem.name);
+            const images = key && galleryData[key] ? galleryData[key] : [];
+            
+            if (images.length === 0) return null;
+
+            const handlePrev = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setExpandedImageIndex(prev => prev === 0 ? images.length - 1 : prev! - 1);
+            };
+
+            const handleNext = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setExpandedImageIndex(prev => prev === images.length - 1 ? 0 : prev! + 1);
+            };
+
+            return (
+              <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+                {images.length > 1 && (
+                  <button className="lightbox-nav prev" onClick={handlePrev}>
+                    <ChevronLeft size={32} color="white" />
+                  </button>
+                )}
+                <img src={images[expandedImageIndex]} alt="Vista expandida" className="lightbox-img" />
+                {images.length > 1 && (
+                  <button className="lightbox-nav next" onClick={handleNext}>
+                    <ChevronRight size={32} color="white" />
+                  </button>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

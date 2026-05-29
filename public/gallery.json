@@ -1,10 +1,12 @@
 {
   "chessecake": [
     "/images/gallery/chessecake/IMG-20260526-WA0041(1).jpg",
-    "/images/gallery/chessecake/IMG-20260526-WA0093.jpg"
+    "/images/gallery/chessecake/IMG-20260526-WA0093.jpg",
+    "/images/gallery/chessecake/WhatsApp Image 2026-05-29 at 13.02.33.jpeg"
   ],
   "chocoflan": [
-    "/images/gallery/chocoflan/IMG-20260526-WA0056.jpg"
+    "/images/gallery/chocoflan/IMG-20260526-WA0056.jpg",
+    "/images/gallery/chocoflan/WhatsApp Image 2026-05-29 at 12.52.51 (1).jpeg"
   ],
   "cupcake": [
     "/images/gallery/cupcake/IMG-20260526-WA0043.jpg",
@@ -21,14 +23,26 @@
     "/images/gallery/flan/IMG-20260526-WA0065.jpg",
     "/images/gallery/flan/IMG-20260526-WA0077.jpg",
     "/images/gallery/flan/IMG-20260526-WA0087.jpg",
-    "/images/gallery/flan/IMG-20260526-WA0096.jpg"
+    "/images/gallery/flan/IMG-20260526-WA0096.jpg",
+    "/images/gallery/flan/WhatsApp Image 2026-05-29 at 12.52.51.jpeg"
   ],
   "fresas": [
     "/images/gallery/fresas/IMG-20260526-WA0073.jpg",
     "/images/gallery/fresas/IMG-20260526-WA0089.jpg"
   ],
   "gelatina": [
-    "/images/gallery/gelatina/IMG-20260526-WA0091.jpg"
+    "/images/gallery/gelatina/IMG-20260526-WA0091.jpg",
+    "/images/gallery/gelatina/WhatsApp Image 2026-05-29 at 13.02.33 (1).jpeg",
+    "/images/gallery/gelatina/WhatsApp Image 2026-05-29 at 13.02.33 (2).jpeg"
+  ],
+  "hamburguesas": [
+    "/images/gallery/hamburguesas/WhatsApp Image 2026-05-29 at 13.02.33 (8).jpeg",
+    "/images/gallery/hamburguesas/WhatsApp Image 2026-05-29 at 13.02.34 (1).jpeg",
+    "/images/gallery/hamburguesas/WhatsApp Image 2026-05-29 at 13.02.34.jpeg"
+  ],
+  "meritos": [
+    "/images/gallery/meritos/WhatsApp Image 2026-05-29 at 13.02.34 (3).jpeg",
+    "/images/gallery/meritos/WhatsApp Image 2026-05-29 at 13.02.34 (5).jpeg"
   ],
   "pan": [
     "/images/gallery/pan/IMG-20260526-WA0047.jpg",
@@ -63,7 +77,12 @@
     "/images/gallery/pastel/IMG-20260526-WA0090.jpg",
     "/images/gallery/pastel/IMG-20260526-WA0092.jpg",
     "/images/gallery/pastel/IMG-20260526-WA0094.jpg",
-    "/images/gallery/pastel/IMG-20260526-WA0100.jpg"
+    "/images/gallery/pastel/IMG-20260526-WA0100.jpg",
+    "/images/gallery/pastel/WhatsApp Image 2026-05-29 at 13.02.33 (5).jpeg",
+    "/images/gallery/pastel/WhatsApp Image 2026-05-29 at 13.02.33 (6).jpeg",
+    "/images/gallery/pastel/WhatsApp Image 2026-05-29 at 13.02.33 (7).jpeg",
+    "/images/gallery/pastel/WhatsApp Image 2026-05-29 at 13.02.34 (2).jpeg",
+    "/images/gallery/pastel/WhatsApp Image 2026-05-29 at 13.02.34 (4).jpeg"
   ],
   "pastel xv": [
     "/images/gallery/pastel xv/IMG-20260526-WA0064.jpg",
@@ -81,6 +100,7 @@
   ],
   "roscas": [
     "/images/gallery/roscas/IMG-20260526-WA0069.jpg",
-    "/images/gallery/roscas/IMG-20260526-WA0095.jpg"
+    "/images/gallery/roscas/IMG-20260526-WA0095.jpg",
+    "/images/gallery/roscas/WhatsApp Image 2026-05-29 at 13.02.33 (3).jpeg"
   ]
 }
