@@ -63,26 +63,32 @@ function App() {
     }
   }, [galleryData, supabaseGalleryData]);
 
+  const fetchSupabaseGallery = async () => {
+    const { data, error } = await supabase.from('gallery_images').select('*');
+    if (data && !error) {
+      const grouped: Record<string, string[]> = {};
+      data.forEach((img: any) => {
+        if (!grouped[img.category]) grouped[img.category] = [];
+        grouped[img.category].push(img.image_url);
+      });
+      setSupabaseGalleryData(grouped);
+    }
+  };
+
   useEffect(() => {
     fetch('/gallery.json')
       .then(res => res.json())
       .then(data => setGalleryData(data))
       .catch(err => console.error('Error loading gallery:', err));
 
-    // Fetch from Supabase
-    async function fetchSupabaseGallery() {
-      const { data, error } = await supabase.from('gallery_images').select('*');
-      if (data && !error) {
-        const grouped: Record<string, string[]> = {};
-        data.forEach((img: any) => {
-          if (!grouped[img.category]) grouped[img.category] = [];
-          grouped[img.category].push(img.image_url);
-        });
-        setSupabaseGalleryData(grouped);
-      }
-    }
+    // Fetch inicial from Supabase
     fetchSupabaseGallery();
   }, []);
+
+  const handleCloseAdminPanel = () => {
+    setShowAdminPanel(false);
+    fetchSupabaseGallery();
+  };
 
   useEffect(() => {
     async function fetchProducts() {
@@ -446,7 +452,7 @@ function App() {
 
       {/* Admin Panel Modal */}
       {showAdminPanel && (
-        <AdminPanel onClose={() => setShowAdminPanel(false)} />
+        <AdminPanel onClose={handleCloseAdminPanel} />
       )}
     </div>
   );
