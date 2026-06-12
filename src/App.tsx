@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Cake, Facebook, ChevronRight, ChevronLeft, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles, Search } from 'lucide-react';
+import { Cake, Facebook, ChevronRight, ChevronLeft, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles, Search, Settings } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import AdminPanel from './components/AdminPanel';
 import './App.css';
 
 interface Product {
@@ -48,22 +49,39 @@ function App() {
   const [selectedGalleryItem, setSelectedGalleryItem] = useState<{ name: string, image: string } | null>(null);
   const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
   const [galleryData, setGalleryData] = useState<Record<string, string[]>>({});
+  const [supabaseGalleryData, setSupabaseGalleryData] = useState<Record<string, string[]>>({});
   const [currentMeritoIndex, setCurrentMeritoIndex] = useState(0);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   useEffect(() => {
-    if (galleryData['meritos'] && galleryData['meritos'].length > 0) {
+    const combinedMeritos = [...(galleryData['meritos'] || []), ...(supabaseGalleryData['meritos'] || [])];
+    if (combinedMeritos.length > 0) {
       const interval = setInterval(() => {
-        setCurrentMeritoIndex(prev => (prev + 1) % galleryData['meritos'].length);
+        setCurrentMeritoIndex(prev => (prev + 1) % combinedMeritos.length);
       }, 3500);
       return () => clearInterval(interval);
     }
-  }, [galleryData]);
+  }, [galleryData, supabaseGalleryData]);
 
   useEffect(() => {
     fetch('/gallery.json')
       .then(res => res.json())
       .then(data => setGalleryData(data))
       .catch(err => console.error('Error loading gallery:', err));
+
+    // Fetch from Supabase
+    async function fetchSupabaseGallery() {
+      const { data, error } = await supabase.from('gallery_images').select('*');
+      if (data && !error) {
+        const grouped: Record<string, string[]> = {};
+        data.forEach((img: any) => {
+          if (!grouped[img.category]) grouped[img.category] = [];
+          grouped[img.category].push(img.image_url);
+        });
+        setSupabaseGalleryData(grouped);
+      }
+    }
+    fetchSupabaseGallery();
   }, []);
 
   useEffect(() => {
@@ -92,7 +110,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (selectedGalleryItem || isMenuOpen || expandedImageIndex !== null) {
+    if (selectedGalleryItem || isMenuOpen || expandedImageIndex !== null || showAdminPanel) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -100,7 +118,13 @@ function App() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [selectedGalleryItem, isMenuOpen, expandedImageIndex]);
+  }, [selectedGalleryItem, isMenuOpen, expandedImageIndex, showAdminPanel]);
+  
+  // Helper to combine local and supabase images
+  const getCombinedGallery = (key: string | null) => {
+    if (!key) return [];
+    return [...(galleryData[key] || []), ...(supabaseGalleryData[key] || [])];
+  };
 
   return (
     <div className="app-container">
@@ -138,9 +162,9 @@ function App() {
             </div>
           </div>
           <div className="hero-image-wrapper">
-            {galleryData['meritos'] && galleryData['meritos'].length > 0 ? (
+            {getCombinedGallery('meritos').length > 0 ? (
               <img 
-                src={galleryData['meritos'][currentMeritoIndex]} 
+                src={getCombinedGallery('meritos')[currentMeritoIndex]} 
                 alt="Méritos y reconocimientos" 
                 className="hero-image" 
                 style={{ objectFit: 'cover' }}
@@ -171,10 +195,11 @@ function App() {
             ) : (
               products.map((product) => {
                 const key = getGalleryKey(product.name);
+                const combinedImages = getCombinedGallery(key);
                 const idx = (key === 'cupcake' || key === 'pastel xv') ? 1 : 0;
-                const coverImage = key && galleryData[key] && galleryData[key].length > idx 
-                  ? galleryData[key][idx] 
-                  : (key && galleryData[key] && galleryData[key].length > 0 ? galleryData[key][0] : product.image);
+                const coverImage = combinedImages.length > idx 
+                  ? combinedImages[idx] 
+                  : (combinedImages.length > 0 ? combinedImages[0] : product.image);
                 return (
                   <div key={product.id} className="product-card glass-panel">
                     <div className="card-image-container">
@@ -210,9 +235,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src={galleryData['pan']?.[0] || "/images/pan_dulce.png"} alt="Pan de Dulce" loading="lazy" />
+                <img src={getCombinedGallery('pan')?.[0] || "/images/pan_dulce.png"} alt="Pan de Dulce" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Pan de Dulce', image: galleryData['pan']?.[0] || '/images/pan_dulce.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Pan de Dulce', image: getCombinedGallery('pan')?.[0] || '/images/pan_dulce.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -228,9 +253,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src={galleryData['donas']?.[0] || "/images/donuts.png"} alt="Donas" loading="lazy" />
+                <img src={getCombinedGallery('donas')?.[0] || "/images/donuts.png"} alt="Donas" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Donas', image: galleryData['donas']?.[0] || '/images/donuts.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Donas', image: getCombinedGallery('donas')?.[0] || '/images/donuts.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -246,9 +271,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src={galleryData['chessecake']?.[0] || "/images/cheesecake.png"} alt="Cheesecake" loading="lazy" />
+                <img src={getCombinedGallery('chessecake')?.[0] || "/images/cheesecake.png"} alt="Cheesecake" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cheesecake', image: galleryData['chessecake']?.[0] || '/images/cheesecake.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cheesecake', image: getCombinedGallery('chessecake')?.[0] || '/images/cheesecake.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -264,9 +289,9 @@ function App() {
 
             <div className="specialty-card glass-panel">
               <div className="card-image-container">
-                <img src={galleryData['cupcake']?.[1] || galleryData['cupcake']?.[0] || "/images/cupcake.png"} alt="Cupcakes" loading="lazy" />
+                <img src={getCombinedGallery('cupcake')?.[1] || getCombinedGallery('cupcake')?.[0] || "/images/cupcake.png"} alt="Cupcakes" loading="lazy" />
                 <div className="card-overlay">
-                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cupcakes', image: galleryData['cupcake']?.[1] || galleryData['cupcake']?.[0] || '/images/cupcake.png' })}>
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Cupcakes', image: getCombinedGallery('cupcake')?.[1] || getCombinedGallery('cupcake')?.[0] || '/images/cupcake.png' })}>
                     <Search size={20} /> Ver galería
                   </button>
                 </div>
@@ -312,6 +337,12 @@ function App() {
         </div>
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} Mis Dulces Ideas. Con Mucho Amoor Para Mi Celees.</p>
+          <button 
+            onClick={() => setShowAdminPanel(true)} 
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem auto 0' }}
+          >
+            <Settings size={14} /> Administrar
+          </button>
         </div>
       </footer>
 
@@ -345,7 +376,7 @@ function App() {
                 };
 
                 const key = getGalleryKey(selectedGalleryItem.name);
-                const images = key && galleryData[key] ? galleryData[key] : [];
+                const images = getCombinedGallery(key);
 
                 if (images.length > 0) {
                   return images.map((img, idx) => (
@@ -380,7 +411,7 @@ function App() {
           </button>
           {(() => {
             const key = getGalleryKey(selectedGalleryItem.name);
-            const images = key && galleryData[key] ? galleryData[key] : [];
+            const images = getCombinedGallery(key);
             
             if (images.length === 0) return null;
 
@@ -411,6 +442,11 @@ function App() {
             );
           })()}
         </div>
+      )}
+
+      {/* Admin Panel Modal */}
+      {showAdminPanel && (
+        <AdminPanel onClose={() => setShowAdminPanel(false)} />
       )}
     </div>
   );
