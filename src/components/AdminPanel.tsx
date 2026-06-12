@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Loader2, Trash2, Upload, Lock, X } from 'lucide-react';
 import './AdminPanel.css'; // Crearemos este archivo de estilos también
