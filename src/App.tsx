@@ -39,7 +39,7 @@ function App() {
     if (n.includes('cupcake')) return 'cupcake';
     if (n.includes('cheese')) return 'chessecake';
     if (n.includes('hamburguesa')) return 'hamburguesas';
-    if (n.includes('frappe')) return 'frappes';
+    if (n.includes('frappe') || n.includes('frappé')) return 'frappes';
     if (n.includes('pastel')) return 'pastel';
     return null;
   };
@@ -430,24 +430,6 @@ function App() {
             <p>Aquí mostramos todos los trabajos reales que hemos entregado.</p>
             <div className="modal-gallery-grid">
               {(() => {
-                const getGalleryKey = (name: string) => {
-                  const n = name.toLowerCase();
-                  if (n.includes('chocoflan') || n.includes('imposible')) return 'chocoflan';
-                  if (n.includes('15 años')) return 'pastel xv';
-                  if (n.includes('gelatina')) return 'gelatina';
-                  if (n.includes('pan')) return 'pan';
-                  if (n.includes('pizza')) return 'pizza';
-                  if (n.includes('rosca')) return 'roscas';
-                  if (n.includes('fresa')) return 'fresas';
-                  if (n.includes('flan')) return 'flan';
-                  if (n.includes('dona')) return 'donas';
-                  if (n.includes('cupcake')) return 'cupcake';
-                  if (n.includes('cheese')) return 'chessecake';
-                  if (n.includes('hamburguesa')) return 'hamburguesas';
-                  if (n.includes('pastel')) return 'pastel';
-                  return null;
-                };
-
                 const key = getGalleryKey(selectedGalleryItem.name);
                 const images = getCombinedGallery(key);
 
