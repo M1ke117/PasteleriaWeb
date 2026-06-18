@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Cake, Facebook, ChevronRight, ChevronLeft, Heart, Star, Pizza, Coffee, Sandwich, Crown, Loader2, Menu, X, Gift, Sparkles, Search, Settings } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import AdminPanel from './components/AdminPanel';
@@ -39,6 +39,7 @@ function App() {
     if (n.includes('cupcake')) return 'cupcake';
     if (n.includes('cheese')) return 'chessecake';
     if (n.includes('hamburguesa')) return 'hamburguesas';
+    if (n.includes('frappe')) return 'frappes';
     if (n.includes('pastel')) return 'pastel';
     return null;
   };
@@ -52,9 +53,10 @@ function App() {
   const [supabaseGalleryData, setSupabaseGalleryData] = useState<Record<string, string[]>>({});
   const [currentMeritoIndex, setCurrentMeritoIndex] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const loadedImagesRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
-    const combinedMeritos = [...(galleryData['meritos'] || []), ...(supabaseGalleryData['meritos'] || [])];
+    const combinedMeritos = getCombinedGallery('meritos');
     if (combinedMeritos.length > 0) {
       const interval = setInterval(() => {
         setCurrentMeritoIndex(prev => (prev + 1) % combinedMeritos.length);
@@ -129,7 +131,42 @@ function App() {
   // Helper to combine local and supabase images
   const getCombinedGallery = (key: string | null) => {
     if (!key) return [];
-    return [...(galleryData[key] || []), ...(supabaseGalleryData[key] || [])];
+    const local = galleryData[key] || [];
+    const remote = supabaseGalleryData[key] || [];
+    
+    const combined: string[] = [];
+    const seenFilenames = new Set<string>();
+
+    const getFilename = (url: string) => {
+      try {
+        const decoded = decodeURIComponent(url);
+        const parts = decoded.split('/');
+        return parts[parts.length - 1];
+      } catch (e) {
+        const parts = url.split('/');
+        return parts[parts.length - 1];
+      }
+    };
+
+    // Agregar locales primero
+    for (const url of local) {
+      const filename = getFilename(url);
+      if (!seenFilenames.has(filename)) {
+        seenFilenames.add(filename);
+        combined.push(url);
+      }
+    }
+
+    // Agregar remotas, ignorando si el archivo ya existe
+    for (const url of remote) {
+      const filename = getFilename(url);
+      if (!seenFilenames.has(filename)) {
+        seenFilenames.add(filename);
+        combined.push(url);
+      }
+    }
+
+    return combined;
   };
 
   return (
@@ -167,16 +204,28 @@ function App() {
               <a href="#nosotros" className="btn-secondary">Conócenos</a>
             </div>
           </div>
-          <div className="hero-image-wrapper">
+          <div className="hero-image-wrapper" style={{ width: '100%', maxWidth: '500px', height: '500px', position: 'relative' }}>
             {getCombinedGallery('meritos').length > 0 ? (
-              <img 
-                src={getCombinedGallery('meritos')[currentMeritoIndex]} 
-                alt="Méritos y reconocimientos" 
-                className="hero-image" 
-                style={{ objectFit: 'cover' }}
-              />
+              getCombinedGallery('meritos').map((imgSrc, idx) => (
+                <img 
+                  key={`${imgSrc}-${idx}`}
+                  src={imgSrc} 
+                  alt={`Méritos y reconocimientos ${idx + 1}`} 
+                  className="hero-image" 
+                  onLoad={() => { loadedImagesRef.current[imgSrc] = true; }}
+                  style={{ 
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    objectFit: 'cover',
+                    opacity: idx === currentMeritoIndex ? 1 : 0,
+                    transition: 'opacity 1s ease-in-out, transform 0.5s ease',
+                    pointerEvents: idx === currentMeritoIndex ? 'auto' : 'none'
+                  }}
+                />
+              ))
             ) : (
-              <img src="/images/cake.png" alt="Pastel decorado" className="hero-image" />
+              <img src="/images/cake.png" alt="Pastel decorado" className="hero-image" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             )}
           </div>
         </div>
@@ -308,6 +357,24 @@ function App() {
                   <Gift className="text-primary" />
                 </div>
                 <p>Pequeños bocados de felicidad decorados con coberturas exquisitas y diseños muy especiales.</p>
+              </div>
+            </div>
+
+            <div className="specialty-card glass-panel">
+              <div className="card-image-container">
+                <img src={getCombinedGallery('frappes')?.[0] || "/images/frappe.png"} alt="Frappés" loading="lazy" />
+                <div className="card-overlay">
+                  <button className="btn-primary btn-gallery" onClick={() => setSelectedGalleryItem({ name: 'Frappés', image: getCombinedGallery('frappes')?.[0] || '/images/frappe.png' })}>
+                    <Search size={20} /> Ver galería
+                  </button>
+                </div>
+              </div>
+              <div className="specialty-content">
+                <div className="specialty-header">
+                  <h4>Frappés</h4>
+                  <Coffee className="text-primary" />
+                </div>
+                <p>Refrescantes y deliciosos, preparados al momento con tus sabores favoritos para acompañar tu postre.</p>
               </div>
             </div>
 

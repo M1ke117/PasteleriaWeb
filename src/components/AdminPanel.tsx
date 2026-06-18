@@ -17,7 +17,7 @@ interface GalleryImage {
 const CATEGORIES = [
   'pastel', 'pastel xv', 'chocoflan', 'gelatina', 'pan',
   'pizza', 'roscas', 'fresas', 'flan', 'donas',
-  'cupcake', 'chessecake', 'hamburguesas', 'meritos'
+  'cupcake', 'chessecake', 'hamburguesas', 'meritos', 'frappes'
 ];
 
 export default function AdminPanel({ onClose }: AdminPanelProps) {
